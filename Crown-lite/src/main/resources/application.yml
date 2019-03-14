@@ -1,0 +1,23 @@
+context:
+  name: '@project.artifactId@'
+
+spring:
+  profiles:
+    active: '@profile.id@'
+    include:
+    - common
+    - datasource
+    - profile
+  devtools:
+    restart:
+      enabled: false
+  liquibase:
+    enabled: false
+  thymeleaf:
+    cache: false
+
+server:
+  port: '@project.port@'
+  servlet:
+    context-path: /${context.name}
+

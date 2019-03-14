@@ -1,0 +1,18 @@
+
+logging:
+  level:
+    root: info
+  config: classpath:logback-ctx.xml
+  file: F:/cache/logs
+
+server:
+  port: 8088
+  servlet:
+    context-path: "/@project.artifactId@"
+
+mysql:
+  host: 59.37.137.116
+  port: 3306
+  database: crown
+  username: root
+  password: '*GDhc2833737*'

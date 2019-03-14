@@ -1,0 +1,1 @@
+ALTER TABLE `student` ADD COLUMN `content` varchar(255) DEFAULT NULL;

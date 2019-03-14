@@ -1,0 +1,18 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <!-- id::日期和环境。-->
+    <!-- dbms::支持不同数据的的方言。-->
+    <!-- runOnChange::第一次的时候执行以及当 changeSet 的内容发生变化时执行。不受 MD5 校验值的约束。 -->
+    <changeSet author="zengyufei" id="20181211-initTable" context="create">
+        <comment>建表</comment>
+        <sqlFile encoding="utf8" path="liquibase/system/release-1.0/00-initTable.sql" relativeToChangelogFile="false"/>
+    </changeSet>
+
+    <changeSet author="zengyufei" id="20181211-initData" context="init">
+        <comment>初始化数据</comment>
+        <sqlFile encoding="utf8" path="liquibase/system/release-1.0/01-initData.sql" relativeToChangelogFile="false"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,104 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+# Account
+
+# 获取Token
+POST http://{{host}}:{{port}}/{{alias}}/account/token
+Content-Type: application/json
+
+{
+  "loginName":"crown",
+  "password":"crown"
+}
+
+> {%
+client.global.set("auth_token", response.body.data.token);
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# 获取账户详情
+GET http://{{host}}:{{port}}/{{alias}}/account/info
+Authorization: Bearer {{auth_token}}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# 获取账户菜单
+GET http://{{host}}:{{port}}/{{alias}}/account/menus
+Authorization: Bearer {{auth_token}}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# 获取账户按钮
+GET http://{{host}}:{{port}}/{{alias}}/account//buttons/aliases
+Authorization: Bearer {{auth_token}}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+
+# 修改账户邮箱
+PUT http://{{host}}:{{port}}/{{alias}}/account/info
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "email": "312636208@qq.com"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# 修改账户密码
+PUT http://{{host}}:{{port}}/{{alias}}/account/password
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "oldPassword": "crown",
+  "newPassword": "crown"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###

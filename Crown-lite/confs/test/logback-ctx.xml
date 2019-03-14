@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true" scan="true" scanPeriod="30 seconds">
+
+    <!-- 环境变量 -->
+    <springProperty scope="context" name="PROFILE" source="spring.profiles.active" />
+    <!-- 项目名称 -->
+    <springProperty scope="context" name="PROJECT_NAME" source="context.name" />
+    <!--定义日志文件的存储地址 勿在 LogBack 的配置中使用相对路径-->
+    <springProperty scope="context" name="LOG_HOME" source="logging.file"/>
+    <!-- 日志级别 -->
+    <springProperty scope="context" name="LEVEL" source="logging.level.root"/>
+
+    <!--
+        <pattern>
+          %d{yyyy-MM-dd HH:mm:ss} [%level] - %msg%n
+          Logger: %logger
+          Class: %class
+          File: %file
+          Caller: %caller
+          Line: %line
+          Message: %m
+          Method: %M
+          Relative: %relative
+          Thread: %thread
+          Exception: %ex
+          xException: %xEx
+          nopException: %nopex
+          rException: %rEx
+          Marker: %marker
+          newline:%n
+        </pattern>
+    -->
+
+    <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+    <!--  普通控制台输出 -->
+    <property name="NOMAL_PATTERN"
+              value="%X{uuid} [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] [%level] %logger{96} #%M :%line %X{req.remoteHost} %X{req.requestURI} %X{req.queryString} - %n     %msg%n" />
+    <!--  参数校验 控制台输出 -->
+    <property name="ARG_COLOR_PATTERN"
+              value="%X{uuid} [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] [%level] %logger{96} #%M :%line %X{req.remoteHost} %X{req.requestURI} %X{req.queryString} - %n     %msg%n[%ex]" />
+
+
+    <!-- ============================================================================================================= -->
+    <!-- ============================================================================================================= -->
+    <!-- ================================================ 文件配置 ==================================================== -->
+    <!-- ============================================================================================================= -->
+    <!-- ============================================================================================================= -->
+
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${NOMAL_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <appender name="ARG_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${ARG_COLOR_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 启动日志，按每天输出 -->
+    <appender name="SYSTEM_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 正在记录的日志文件的路径及文件名 -->
+        <file>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-system.log</file>
+        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-system.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>15</MaxHistory>
+            <!--日志文件最大的大小-->
+            <MaxFileSize>100MB</MaxFileSize>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <!-- 追加方式记录日志 -->
+        <append>true</append>
+        <!-- 日志文件的格式 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${NOMAL_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+
+    <!-- 此日志文件只记录 WARN 级别的 -->
+    <appender name="WARN_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 正在记录的日志文件的路径及文件名 -->
+        <file>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-warn.log</file>
+        <!-- 过滤器，只记录 WARN 级别的日志-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 过滤的级别 -->
+            <level>WARN</level>
+            <!-- 匹配时的操作：接收（记录） -->
+            <onMatch>ACCEPT</onMatch>
+            <!-- 不匹配时的操作：拒绝（不记录） -->
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-warn.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>15</MaxHistory>
+            <!--日志文件最大的大小-->
+            <MaxFileSize>100MB</MaxFileSize>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${NOMAL_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 此日志文件只记录 ERROR 级别的 -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 正在记录的日志文件的路径及文件名 -->
+        <file>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-error.log</file>
+        <!-- 过滤器，只记录 ERROR 级别的日志-->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 过滤的级别 -->
+            <level>ERROR</level>
+            <!-- 匹配时的操作：接收（记录） -->
+            <onMatch>ACCEPT</onMatch>
+            <!-- 不匹配时的操作：拒绝（不记录） -->
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-error.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>15</MaxHistory>
+            <!--日志文件最大的大小-->
+            <MaxFileSize>100MB</MaxFileSize>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${NOMAL_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- controller & aop 日志 -->
+    <appender name="CONTROLLER_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 正在记录的日志文件的路径及文件名 -->
+        <file>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-controller.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-controller.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>15</MaxHistory>
+            <!--日志文件最大的大小-->
+            <MaxFileSize>100MB</MaxFileSize>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${NOMAL_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- service 业务日志 -->
+    <appender name="SERVICE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 正在记录的日志文件的路径及文件名 -->
+        <file>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-service.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-service.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>15</MaxHistory>
+            <!--日志文件最大的大小-->
+            <MaxFileSize>100MB</MaxFileSize>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${NOMAL_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- db 数据库持久化日志 -->
+    <appender name="DB_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 正在记录的日志文件的路径及文件名 -->
+        <file>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-db.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>${LOG_HOME}/${PROJECT_NAME}.${PROFILE}-db.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!--日志文件保留天数-->
+            <MaxHistory>15</MaxHistory>
+            <!--日志文件最大的大小-->
+            <MaxFileSize>100MB</MaxFileSize>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${NOMAL_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ============================================================================================================= -->
+    <!-- ============================================================================================================= -->
+    <!-- ==================================================== 配置 ==================================================== -->
+    <!-- ============================================================================================================= -->
+    <!-- ============================================================================================================= -->
+
+    <!-- 开发环境下的日志配置 -->
+    <root level="info">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="SYSTEM_FILE" />
+        <appender-ref ref="ERROR_FILE" />
+    </root>
+
+    <!-- 别名设置 -->
+    <logger name="controller" additivity="false" level="INFO">
+        <appender-ref ref="CONTROLLER_FILE" />
+    </logger>
+    <logger name="service" additivity="true" level="INFO">
+        <appender-ref ref="SERVICE_FILE" />
+    </logger>
+    <logger name="db" additivity="true" level="INFO">
+        <appender-ref ref="DB_FILE" />
+    </logger>
+    <logger name="warn" additivity="false" level="WARN">
+        <appender-ref ref="WARN_FILE" />
+    </logger>
+    <logger name="exception" additivity="true" level="ERROR">
+        <appender-ref ref="ERROR_FILE" />
+    </logger>
+
+    <!-- 设置Spring&Hibernate日志输出级别 -->
+    <logger name="org.springframework" level="INFO" />
+    <logger name="org.mybatis" level="WARN" />
+    <logger name="com.ibatis" level="DEBUG" />
+    <logger name="com.ibatis.common.jdbc.SimpleDataSource" level="DEBUG" />
+    <logger name="com.ibatis.common.jdbc.ScriptRunner" level="DEBUG" />
+    <logger name="com.ibatis.sqlmap.engine.impl.SqlMapClientDelegate" level="DEBUG" />
+    <logger name="java.sql.Connection" level="DEBUG" />
+    <logger name="java.sql.Statement" level="DEBUG" />
+    <logger name="java.sql.PreparedStatement" level="DEBUG" />
+    <logger name="com.zaxxer.hikari.pool.PoolBase" level="WARN" />
+    <logger name="com.zaxxer.hikari.pool.HikariPool" level="WARN" />
+
+    <logger name="org.crown" level="info"/>
+    <logger name="org.crown.framework.p6spy" level="debug"/>
+
+    <!-- 本系统日志输出级别 -->
+    <logger name="com.corsyn.oa.controller" level="INFO" />
+    <logger name="com.corsyn.oa.service" level="INFO" />
+    <logger name="com.corsyn.oa.mapper" level="WARN" />
+    <logger name="com.corsyn.oa.common.base.exception.handler.GlobalControllerExceptionHandler" level="WARN">
+        <appender-ref ref="ARG_CONSOLE" />
+    </logger>
+
+    <!-- 自己集成第三方框架输出 -->
+    <logger name="com.baomidou.mybatisplus.plugins.PerformanceInterceptor" level="INFO,DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="DB_FILE" />
+    </logger>
+    <logger name="cn.hutool.db.sql.SqlLog" level="INFO,DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="DB_FILE" />
+    </logger>
+
+
+    <!-- 邮件监控异常 -->
+    <!--
+        <appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">
+            <smtpHost>smtp.163.com</smtpHost>
+            <username></username>
+            <password></password>
+            <from>xxxxx@163.com</from>
+            <to>xxxxx@qq.com</to>
+            <subject>【web-ext-Error】: %logger</subject>
+         <layout class="ch.qos.logback.classic.html.HTMLLayout"/>
+            <pattern>${NOMAL_PATTERN}</pattern>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>ERROR</level>
+            </filter>
+        </appender>
+    -->
+
+    <!-- 日志写数据库 -->
+    <!-- <appender name="DB" class="ch.qos.logback.classic.db.DBAppender">  
+         <connectionSource class="ch.qos.logback.core.db.DriverManagerConnectionSource">  
+                           <driverClass>com.mysql.jdbc.Driver</driverClass>  
+                           <url>jdbc:mysql://localhost:3306/test</url>  
+                           <user>root</user>  
+                           <password>trend_dev</password>  
+         </connectionSource>
+     </appender>-->
+</configuration>

@@ -1,0 +1,25 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="zengyufei" id="20181211-initTable" context="create">
+        <comment>建表</comment>
+        <sqlFile encoding="utf8" path="liquibase/test/release-1.0/00-createStudent.sql" relativeToChangelogFile="false" />
+    </changeSet>
+
+    <changeSet author="zengyufei" id="20181211-initData" context="init">
+        <comment>初始化数据</comment>
+        <loadData encoding="utf8" file="liquibase/test/release-1.0/01-initStudent.csv" tableName="student" relativeToChangelogFile="false" />
+    </changeSet>
+
+    <changeSet author="zengyufei" id="20181211-createStudent" context="update">
+        <comment>新增字段</comment>
+        <sqlFile encoding="utf8" path="liquibase/test/release-1.0/02-addColumnStudent.sql" relativeToChangelogFile="false" />
+    </changeSet>
+
+    <changeSet author="zengyufei" id="20181211-dropStudent" context="delete">
+        <comment>删除学生表</comment>
+        <sqlFile encoding="utf8" path="liquibase/test/release-1.0/03-dropStudent.sql" relativeToChangelogFile="false" />
+    </changeSet>
+
+</databaseChangeLog>

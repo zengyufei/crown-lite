@@ -1,0 +1,142 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+
+# 获取Token
+POST http://{{host}}:{{port}}/{{alias}}/account/token
+Content-Type: application/json
+
+{
+  "loginName":"crown",
+  "password":"crown"
+}
+
+> {%
+client.global.set("auth_token", response.body.data.token);
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# Menu
+# 查询所有菜单
+GET http://{{host}}:{{port}}/{{alias}}/menus
+Authorization: Bearer {{auth_token}}
+
+> {%
+client.global.set("queryFirstMenuId", response.body.data[0].id);
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# 查询单个菜单
+GET http://{{host}}:{{port}}/{{alias}}/menus/{{queryFirstMenuId}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# 查询父级菜单(下拉框)
+GET http://{{host}}:{{port}}/{{alias}}/menus/combos
+Authorization: Bearer {{auth_token}}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# 添加菜单
+POST http://{{host}}:{{port}}/{{alias}}/menus
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "parentId": 0,
+  "menuName": "测试菜单",
+  "path": "view/test/index.html",
+  "router": "test",
+  "menuType": "1",
+  "icon": "layui-icon-set",
+  "alias": "sys:test:test",
+  "status": "0"
+}
+
+> {%
+client.global.set("newCreateMenuId", response.body.data);
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 201, "Response code is not 201");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# 修改菜单
+PUT http://{{host}}:{{port}}/{{alias}}/menus/{{newCreateMenuId}}
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "alias": "sys:test:create"
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# 设置菜单状态
+PUT http://{{host}}:{{port}}/{{alias}}/menus/{{newCreateMenuId}}/status
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json
+
+{
+  "status": 1
+}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###
+
+# 删除菜单
+DELETE http://{{host}}:{{port}}/{{alias}}/menus/{{newCreateMenuId}}
+Authorization: Bearer {{auth_token}}
+
+> {%
+client.test("Request executed successfully", function() {
+  client.assert(response.status === 200, "Response code is not 200");
+  var type = response.contentType.mimeType;
+  client.assert(type === "application/json", "Expected 'application/json' but received '" + type + "'");
+});
+%}
+###

@@ -1,0 +1,4 @@
+
+spring:
+  datasource:
+    jndi-name: java:comp/env/jdbc/mydb

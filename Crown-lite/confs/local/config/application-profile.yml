@@ -1,0 +1,25 @@
+logging:
+  level:
+    root: info
+  config: classpath:logback-ctx.xml
+  file: F:/cache/logs
+
+spring:
+  devtools:
+    restart:
+      enabled: true #是否开启开发者工具（true/false）
+      additional-paths: src/main
+      #additional-paths: src/main/java
+
+      #不重启目录:
+      #exclude: static/**,WEB-INF/view/**
+
+server:
+  port: 7788
+
+mysql:
+  host: localhost
+  port: 3306
+  database: crown
+  username: root
+  password: root

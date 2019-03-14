@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.crown</groupId>
+    <artifactId>crown-lite</artifactId>
+    <version>1.0</version>
+    <packaging>war</packaging>
+
+    <name>${project.artifactId}</name>
+    <description>${project.artifactId}</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.1.RELEASE</version>
+        <relativePath /> <!-- lookup parent from repository -->
+    </parent>
+
+    <properties>
+        <!-- default-profile -->
+        <profile.id>local</profile.id>
+        <project.host>localhost</project.host>
+        <project.port>7788</project.port>
+
+        <!-- maven plugins -->
+        <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
+        <yaml-properties-maven-plugin.version>1.1.3</yaml-properties-maven-plugin.version>
+
+        <!-- libraries -->
+        <logback-classic.version>1.1.7</logback-classic.version>
+        <commons-io.version>2.6</commons-io.version>
+        <jackson-dataformat-yaml.version>2.9.7</jackson-dataformat-yaml.version>
+        <jackson-databind.version>2.9.7</jackson-databind.version>
+        <validator.version>1.0.0</validator.version>
+        <guava.version>23.0</guava.version>
+        <commons-lang.version>2.6</commons-lang.version>
+
+        <!-- test libraries -->
+        <junit.version>4.12</junit.version>
+
+        <!-- project -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.crown</groupId>
+            <artifactId>crown-lite-common</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--  war 包必须, 打war包时加入此项， 告诉spring-boot tomcat相关jar包用外部的，不要打进去 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <!-- 打包出来的名称 -->
+        <finalName>${project.artifactId}</finalName>
+
+        <!-- mybatis 拷贝 java src 文件夹下的 xml 到 resources -->
+        <resources>
+            <!-- maven default生命周期，process-resources阶段执行maven-resources-plugin插件的resources目标处理主资源目下的资源文件时，不处理如下配置中包含的资源类型（剔除下如下配置中包含的资源类型）-->
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+                <excludes>
+                    <!-- 解决经过 maven 的 filter，会破坏 font 文件的二进制文件格式，到时前台解析出错的问题。 -->
+                    <exclude>**/*.eot</exclude>
+                    <exclude>**/*.woff</exclude>
+                    <exclude>**/*.svg</exclude>
+                    <exclude>**/*.ttf</exclude>
+                </excludes>
+                <!-- 是否替换@xx@表示的maven properties属性值 -->
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/java</directory>
+                <includes>
+                    <include>**/mapper/*.xml</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <!-- 解决经过 maven 的 filter，会破坏 font 文件的二进制文件格式，到时前台解析出错的问题。 -->
+                    <include>**/*.eot</include>
+                    <include>**/*.woff</include>
+                    <include>**/*.svg</include>
+                    <include>**/*.ttf</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>confs/${profile.id}</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <!-- 编译跳过 test -->
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <skip>true</skip> <!-- skip testCompile -->
+                </configuration>
+            </plugin>
+
+            <!--
+                war打包插件，指定资源打包 指定环境打包：mvn -P uat package
+             -->
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.2.2</version>
+
+                <configuration>
+                    <archive>
+                        <!--打包后不包括maven的描述文件-->
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+
+                    <!--
+                      过滤问题 jar 包
+                    -->
+                    <packagingExcludes>
+                        WEB-INF/lib/commons-logging-*.jar, %regex[WEB-INF/lib/log4j-(?!over-slf4j).*.jar]
+                    </packagingExcludes>
+                    <!-- 如果想在没有 web.xml 的情况构建 war 包，请设置为 false -->
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
+                    <webResources>
+                        <resource>
+                            <directory>confs/${profile.id}</directory>
+                            <targetPath>WEB-INF/classes</targetPath>
+                            <filtering>true</filtering>
+                        </resource>
+                    </webResources>
+                </configuration>
+
+            </plugin>
+
+            <!-- 导出数据库脚本 -->
+            <plugin>
+                <!--
+                    命令行运行 https://www.cnblogs.com/jimboi/p/8093043.html
+                -->
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-maven-plugin</artifactId>
+                <version>3.5.3</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.javassist</groupId>
+                        <artifactId>javassist</artifactId>
+                        <version>3.18.2-GA</version>
+                    </dependency>
+                    <dependency>
+                        <artifactId>snakeyaml</artifactId>
+                        <groupId>org.yaml</groupId>
+                        <version>1.23</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <!-- 指定执行主文件 -->
+                    <changeLogFile>src/main/resources/liquibase/test/test.xml</changeLogFile>
+                    <!-- 数据库与脚本不一致时 -->
+                    <diffChangeLogFile>src/main/resources/liquibase/changelog/${maven.build.timestamp}_changelog.xml</diffChangeLogFile>
+                    <outputChangeLogFile>src/main/resources/liquibase/changelog/log.xml</outputChangeLogFile>
+                    <defaultSchemaName />
+                    <!-- 指定数据库连接 -->
+                    <propertyFile>confs/${profile.id}/config/application-profile.yml</propertyFile>
+                    <!--以下为数据库连接参数-->           
+                    <driver>com.p6spy.engine.spy.P6SpyDriver</driver>
+                    <url>jdbc:p6spy:mysql://localhost:3306/crown?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=Asia/Shanghai&amp;useSSL=false&amp;autoReconnect=true&amp;allowMultiQueries=true</url>
+                    <username>${mysql.username:root}</username>
+                    <password>${mysql.password:root}</password>
+                </configuration>
+            </plugin>
+
+            <!-- ant 脚本 自定义 maven 执行过程 打印各种信息 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+
+                    <execution>
+                        <id>echo-application-properties</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo>-------------------------------------------------------------------</echo>
+                                <echo>Application properties</echo>
+                                <echo>Build profile: ${profile.id}</echo>
+                                <echo>Project name: ${project.name}</echo>
+                                <echo>Project version: ${project.version}</echo>
+                                <echo>Project port: ${server.port}</echo>
+                                <echo>Project directory: ${project.basedir}</echo>
+                                <echo>Database driver: ${spring.datasource.driver-class-name}</echo>
+                                <echo>Database url: ${spring.datasource.url}</echo>
+                                <echo>Database username: ${spring.datasource.username}</echo>
+                                <echo>Database password: ${spring.datasource.password}</echo>
+                                <echo>-------------------------------------------------------------------</echo>
+                            </target>
+                        </configuration>
+                    </execution>
+
+
+                    <execution>
+                        <id>copy-file</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <!-- 编译时，拷贝配置覆盖 -->
+                        <configuration>
+                            <target name="copy">
+                                <copy todir="${basedir}/target/classes/" overwrite="true">
+                                    <fileset dir="${basedir}/confs/${profile.id}/" includes="**/*" />
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>copy-file2</id>
+                        <phase>pre-process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <!-- 编译时，拷贝配置覆盖 -->
+                        <configuration>
+                            <target name="copy">
+                                <copy todir="${basedir}/target/classes/" overwrite="true">
+                                    <fileset dir="${basedir}/confs/${profile.id}/" includes="**/*" />
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-file3</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <!-- 编译时，拷贝配置覆盖 -->
+                        <configuration>
+                            <target name="copy">
+                                <copy todir="${basedir}/target/classes/" overwrite="true">
+                                    <fileset dir="${basedir}/confs/${profile.id}/" includes="**/*" />
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--<includes>
+                        &lt;!&ndash;表示执行任何子目录下所有命名以Test结尾的java类&ndash;&gt;
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <excludes>
+                        &lt;!&ndash;表示不执行任何子目录下所有命名以Test开头的java类&ndash;&gt;
+                        <exclude>**/Test*.java</exclude>
+                    </excludes>-->
+                    <skip>true</skip>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
+            <!-- 加载 yml 配置文件的属性到 pom.xml，可以使用 ${spring.version} -->
+            <plugin>
+                <groupId>it.ozimov</groupId>
+                <artifactId>yaml-properties-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>src/main/resources/application.yml</file>
+                                <file>confs/${profile.id}/config/application-profile.yml</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <delimiters>
+                        <delimiter>@</delimiter>
+                    </delimiters>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                </configuration>
+            </plugin>
+            -->
+
+            <!-- Spring boot 打包需要 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork> <!-- 如果没有该配置，devtools不会生效 -->
+                    <mainClass>org.crown.CrownApplication</mainClass>
+                </configuration>
+            </plugin>
+
+            <!-- find bug 新版本-->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>3.1.8</version>
+                <dependencies>
+                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                    <dependency>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs</artifactId>
+                        <version>3.1.9</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+
+        <!-- 插件版本管理 -->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>${maven-antrun-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>it.ozimov</groupId>
+                    <artifactId>yaml-properties-maven-plugin</artifactId>
+                    <version>${yaml-properties-maven-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <!-- maven 仓库 -->
+    <repositories>
+        <repository>
+            <id>aliyun</id>
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>center</id>
+            <url>http://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>jitpack</id>
+            <url>https://jitpack.io</url>
+        </repository>
+
+        <!-- 曾玉飞 maven 个人仓库 -->
+        <repository>
+            <id>maven-repo-master</id>
+            <url>https://raw.github.com/zengyufei/maven-repo/master/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <!-- maven 插件仓库 -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring</id>
+            <url>https://repo.spring.io/plugins-release</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <!-- 环境变量 -->
+    <profiles>
+        <profile>
+            <id>local</id>
+            <activation>
+                <!-- 默认环境变量 -->
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <profile.id>local</profile.id>
+                <project.host>localhost</project.host>
+                <project.port>7788</project.port>
+            </properties>
+            <dependencies>
+            </dependencies>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>${basedir}/confs/${profile.id}/*</directory>
+                        <targetPath>src/main/resources</targetPath>
+                        <includes>
+                            <include>**/**</include>
+                        </includes>
+                        <!-- 是否替换@xx@表示的maven properties属性值 -->
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>dev</id>
+            <properties>
+                <profile.id>dev</profile.id>
+                <project.host>59.37.137.129</project.host>
+                <project.port>8080</project.port>
+            </properties>
+            <dependencies>
+            </dependencies>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>${basedir}/confs/${profile.id}/*</directory>
+                        <targetPath>src/main/resources</targetPath>
+                        <includes>
+                            <include>**/**</include>
+                        </includes>
+                        <!-- 是否替换@xx@表示的maven properties属性值 -->
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>test</id>
+            <properties>
+                <profile.id>test</profile.id>
+                <project.host>localhost</project.host>
+                <project.port>8080</project.port>
+            </properties>
+            <dependencies>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <profile.id>prod</profile.id>
+                <project.host>localhost</project.host>
+                <project.port>8088</project.port>
+            </properties>
+        </profile>
+    </profiles>
+
+
+</project>
